@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        input[type="text"] {
+            width: calc(100% - 65px);
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px 0 0 5px;
+            font-size: 16px;
+        }
+
+        input[type="submit"] {
+            width: 65px;
+            padding: 10px;
+            border: none;
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+            display: flex;
+            align-items: center;
+        }
+
+        li:last-child {
+            border-bottom: none;
+        }
+
+        .delete-btn {
+            background-color: #dc3545;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: auto;
+            margin-right: 5px;
+        }
+
+        .edit-btn {
+            background-color: #ffc107;
+            color: #212529;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+
+        .edit-mode input[type="text"] {
+            border: 1px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>To-Do List</h2>
+    <form id="todo-form">
+        <input type="text" id="todo-input" placeholder="Add new task..." required>
+        <input type="submit" value="Add">
+    </form>
+    <ul id="todo-list">
+        <!-- Tasks will be added dynamically here -->
+    </ul>
+</div>
+
+<script>
+    // Load tasks from local storage when the page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        var savedTasks = JSON.parse(localStorage.getItem('tasks'));
+        if (savedTasks) {
+            savedTasks.forEach(function(task) {
+                addTask(task);
+            });
+        }
+    });
+
+    document.getElementById('todo-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        var input = document.getElementById('todo-input');
+        if (input.value.trim() !== '') {
+            addTask(input.value);
+            input.value = '';
+        }
+    });
+
+    function addTask(taskText) {
+        var list = document.getElementById('todo-list');
+        var li = document.createElement('li');
+        li.innerHTML = '<span class="task-text">' + taskText + '</span>' +
+            '<button class="edit-btn" onclick="editTask(this)">Edit</button>' +
+            '<button class="delete-btn" onclick="deleteTask(this)">Delete</button>';
+        list.appendChild(li);
+        saveTasks();
+    }
+
+    function editTask(editButton) {
+        var li = editButton.parentElement;
+        var span = li.querySelector('.task-text');
+        var input = document.createElement('input');
+        input.type = 'text';
+        input.value = span.textContent;
+        input.classList.add('edit-input');
+        li.insertBefore(input, span);
+        li.removeChild(span);
+        editButton.textContent = 'Save';
+        editButton.classList.add('save-btn');
+        editButton.classList.remove('edit-btn');
+        editButton.setAttribute('onclick', 'saveTask(this)');
+        input.focus();
+    }
+
+    function saveTask(saveButton) {
+        var li = saveButton.parentElement;
+        var input = li.querySelector('.edit-input');
+        var span = document.createElement('span');
+        span.classList.add('task-text');
+        span.textContent = input.value;
+        li.insertBefore(span, input);
+        li.removeChild(input);
+        saveButton.textContent = 'Edit';
+        saveButton.classList.add('edit-btn');
+        saveButton.classList.remove('save-btn');
+        saveButton.setAttribute('onclick', 'editTask(this)');
+        saveTasks();
+    }
+
+    function deleteTask(deleteButton) {
+        var li = deleteButton.parentElement;
+        li.remove();
+        saveTasks();
+    }
+
+    function saveTasks() {
+        var tasks = [];
+        var taskElements = document.querySelectorAll('.task-text');
+        taskElements.forEach(function(taskElement) {
+            tasks.push(taskElement.textContent);
+        });
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+</script>
+
+</body>
+</html>
